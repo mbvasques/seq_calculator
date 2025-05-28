@@ -1,2 +1,2 @@
 # seq_calculator
-Calculator for sequencing 
+Calculator for sequencing experiments
