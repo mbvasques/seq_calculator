@@ -84,7 +84,7 @@ ui = page_sidebar(
     )
   ),
 
-    # Show results
+    # Main Panel: Show results
     card(card_header("Total Cells"), 
          height = "260px", fill = F,
          nav_panel("Total Cells", tableOutput("outTable")),
@@ -104,7 +104,7 @@ seq_table = read.csv("seq_info.csv", sep = ",", header = T, row.names = 1)
 server = function(input, output) {
   
   
-  #add Cells Loaded input for n samples 
+  # add input for n samples 
   n_samples1 = reactive({
     (req(input$nsamples)>0)
     lapply(1:req(input$nsamples), function(i) {
@@ -131,7 +131,7 @@ server = function(input, output) {
   
   output$nsamples1 = renderUI({n_samples1()}) 
   
-  # add Covered Spots input for n samples (Visium) 
+  # add input for n samples (Visium) 
   n_samples2 = reactive({
     (req(input$nsamples)>0)
     if (input$visium) {
@@ -167,11 +167,13 @@ server = function(input, output) {
     # input$rl - read length
     # input$sequencer - sequencer
     # input$phix - phix percentage
-    
+  
+  # perform calculations for output data table when button is pushed
   observeEvent(input$run, { 
     
     bases_lane = seq_table[input$sequencer, "yield_gb"]*10**9*((100-input$phix)/100)
     
+    # per sample calculation
     samples_df = do.call(rbind, lapply(1:input$nsamples, function(i) {
         n_cells = ifelse(input$visium,
                          input[[paste0("vsample_",i)]],
@@ -206,7 +208,7 @@ server = function(input, output) {
       }))
     
     
-    # perform calculations
+    # total calculations
     total_cells = ifelse(input$visium,
                          sum(sapply(1:req(input$nsamples), function(x) ifelse(input[[paste0("vadd_",x)]],
                                                                               input[[paste0("vsample_",x)]],
@@ -244,7 +246,8 @@ server = function(input, output) {
                              "cost (down)" = floor(n_lanes)*seq_table[input$sequencer, "cost_lane"],
                              check.names = F)
     
-    # output table
+    
+    # output tables
     output$outTable = renderTable(outtab, width = "100%")
     output$sampleOutTable = DT::renderDT({
       DT::datatable(samples_df,
@@ -252,6 +255,7 @@ server = function(input, output) {
                     escape = F)
       })
     
+    # download tables
     output$downloadDataTotal <- downloadHandler(
       filename = paste0(input$project,"_sequencing_calc.csv"),
       content = function(file) {
