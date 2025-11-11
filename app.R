@@ -10,6 +10,9 @@
 library(shiny)
 library(bslib)
 
+# read seq_info.csv
+seq_table = read.csv("seq_info.csv", sep = ",", header = T, row.names = 1)
+
 
 # Define UI for application that draws a histogram
 ui = page_sidebar(
@@ -49,8 +52,7 @@ ui = page_sidebar(
         "Sequencing",
           selectInput("sequencer",
                       "Sequencer:",
-                      choices = c("NovaSeq 6000", "NovaSeq X Plus (10B)",
-                                  "NovaSeq X Plus (25B)"),
+                      choices = rownames(seq_table),
                       width = "250px"),
           conditionalPanel(
             condition = "input.visium == true",
@@ -97,8 +99,6 @@ ui = page_sidebar(
              downloadButton("downloadData", "Download")))
 )
 
-# read seq_info.csv
-seq_table = read.csv("seq_info.csv", sep = ",", header = T, row.names = 1)
 
 # Define server logic
 server = function(input, output) {
